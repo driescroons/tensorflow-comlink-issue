@@ -14,18 +14,13 @@ function Landmark() {
   const [predictions, setPredictions] = useState([]);
   const [webcamLoaded, setWebcamLoaded] = useState(false);
 
-  //  Load posenet
   const runFacemesh = async () => {
     modelRef.current = await facemesh.load({
       inputResolution: { width: 640, height: 480 },
       scale: 0.8
     });
-    //
-    setInterval(() => {
-      detect();
-    }, 100);
 
-    // requestAnimationFrame(detect);
+    requestAnimationFrame(detect);
   };
 
   const detect = async () => {
@@ -34,42 +29,13 @@ function Landmark() {
       webcamRef.current !== null &&
       webcamRef.current.video.readyState === 4
     ) {
-      // Get Video Properties
       const video = webcamRef.current.video;
-      // Make Detections
       const predictions = await modelRef.current.estimateFaces(video);
-      // setPredictions(predictions);
-
-      // const ctx = canvasRef.current.getContext("2d");
-
-      context.current.clearRect(0, 0, webcamRef.current.video.videoWidth, webcamRef.current.video.videoHeight);
-      context.current.fillStyle = "#000000";
-      // context.current.fillRect(Math.random() * 100, Math.random() * 100, 20, 20);
-
-
-      for (let i = 0; i < predictions[0].scaledMesh.length; i++) {
-        const x = predictions[0].scaledMesh[i][0];
-        const y = predictions[0].scaledMesh[i][1];
-        // context.current.fillStyle = "white";
-        context.current.fillRect(x, y, 2, 2);
-        // context.current.beginPath();
-        // context.current.arc(x, y, 1, 0, 3 * Math.PI);
-
-        // context.current.fill();
-      }
-
-      // drawMesh(predictions, context.current);   
-      // console.log(face);
+      setPredictions(predictions)
     }
 
-    // requestAnimationFrame(detect);
+    requestAnimationFrame(detect);
   };
-
-  // useEffect(() => {
-  //     // Get canvas context
-      
-      
-  // }, [predictions])
 
   useEffect(() => {
     if (webcamLoaded) {
@@ -103,7 +69,12 @@ function Landmark() {
     }, 100);
   }, []);
 
-  console.log('rerendering');
+  useEffect(() => {
+    if (predictions.length > 0) {
+      context.current.clearRect(0, 0, webcamRef.current.video.videoWidth, webcamRef.current.video.videoHeight);
+      drawMesh(predictions, context.current);   
+    }
+  }, [predictions])
 
   return (
     <div className="App">
@@ -112,28 +83,25 @@ function Landmark() {
         <Webcam
           ref={webcamRef}
           style={{
-            // position: "absolute",
+            position: "absolute",
             marginLeft: "auto",
             marginRight: "auto",
-            // left: 0,
-            // right: 0,
+            left: 0,
+            right: 0,
             textAlign: "center",
             // zindex: 9,
             width: 640,
             height: 480
           }}
         />
-        {/* {(() => console.log('rerendered landmark'))()} */}
         <canvas
         ref={canvasRef}
         style={{
-          // position: "absolute",
+          position: "absolute",
           marginLeft: "auto",
           marginRight: "auto",
-          // left: 0,
-          // right: 0,
-          // textAlign: "center",
-          // zindex: 9,
+          left: 0,
+          right: 0,
           width: 640,
           height: 480
         }}

@@ -2678,12 +2678,9 @@ export const drawMesh = (predictions, ctx) => {
         const y = keypoints[i][1];
         ctx.beginPath();
         ctx.arc(x, y, 1, 0, 3 * Math.PI);
-        ctx.fillStyle = "0x00000";
+        ctx.fillStyle = "aqua";
         ctx.fill();
       }
     });
   }
-
-  // ctx.fillStyle = "#000000";
-  // ctx.fillRect(predictions[0].scaledMesh[0][0], predictions[0].scaledMesh[0][1], 2, 2);
 };
