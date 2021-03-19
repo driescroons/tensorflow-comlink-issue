@@ -1,7 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import * as tf from "@tensorflow/tfjs";
 import * as Comlink from 'comlink';
-import * as landmarks from "@tensorflow-models/face-landmarks-detection";
 import Webcam from "react-webcam";
 
 // eslint-disable-next-line import/no-webpack-loader-syntax
@@ -14,7 +12,7 @@ function Landmark() {
   const webcamRef = useRef(null);
   const canvasRef = useRef(null);
   const context = useRef(null);
-  const modelRef = useRef(null);
+  // const modelRef = useRef(null);
 
   const [predictions, setPredictions] = useState([]);
   const [webcamLoaded, setWebcamLoaded] = useState(false);
@@ -23,10 +21,6 @@ function Landmark() {
   const workerRef = useRef(null);
 
   const runFacemesh = async () => {
-    modelRef.current = await landmarks.load(
-        landmarks.SupportedPackages.mediapipeFacemesh
-    );
-
     requestAnimationFrame(detect);
   };
 
@@ -37,13 +31,11 @@ function Landmark() {
       webcamRef.current.video.readyState === 4
     ) {
       const video = webcamRef.current.video
-      const predictions = await modelRef.current.estimateFaces({
-        input: video
-      });
+      const predictions = await workerRef.current.predict(Comlink.proxy(video));
       setPredictions(predictions)
     }
 
-    console.log(await workerRef.current.predict());
+    // console.log(await workerRef.current.predict());
 
     requestAnimationFrame(detect);
   };

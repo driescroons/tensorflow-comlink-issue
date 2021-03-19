@@ -1,16 +1,21 @@
+import * as tf from "@tensorflow/tfjs";
+import * as landmarks from "@tensorflow-models/face-landmarks-detection";
+
 export class Worker {
-  static model = false;
-  static counter = 0;
+  static model;
   static load = async () => {
-    Worker.model = true;
+    Worker.model = await landmarks.load(
+      landmarks.SupportedPackages.mediapipeFacemesh
+  );
   }
 
-  predict = async () => {
+  predict = async (video) => {
     if (!Worker.model) await Worker.load();
     
-    if (Worker.model) {
-      Worker.counter++;
-    }
-    return Worker.counter;
+    const predictions = await Worker.model.estimateFaces({
+      input: video
+    });
+
+    return predictions;
   } 
 }
