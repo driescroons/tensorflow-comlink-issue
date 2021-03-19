@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as tf from "@tensorflow/tfjs";
 import * as facemesh from "@tensorflow-models/facemesh";
+import * as landmarks from "@tensorflow-models/face-landmarks-detection";
 import Webcam from "react-webcam";
 import { drawMesh } from "./utilities";
 import "./Landmark.css";
@@ -15,10 +16,9 @@ function Landmark() {
   const [webcamLoaded, setWebcamLoaded] = useState(false);
 
   const runFacemesh = async () => {
-    modelRef.current = await facemesh.load({
-      inputResolution: { width: 640, height: 480 },
-      scale: 0.8
-    });
+    modelRef.current = await landmarks.load(
+        landmarks.SupportedPackages.mediapipeFacemesh
+    );
 
     requestAnimationFrame(detect);
   };
@@ -29,8 +29,10 @@ function Landmark() {
       webcamRef.current !== null &&
       webcamRef.current.video.readyState === 4
     ) {
-      const video = webcamRef.current.video;
-      const predictions = await modelRef.current.estimateFaces(video);
+      const video = webcamRef.current.video
+      const predictions = await modelRef.current.estimateFaces({
+        input: video
+      });
       setPredictions(predictions)
     }
 
@@ -89,7 +91,6 @@ function Landmark() {
             left: 0,
             right: 0,
             textAlign: "center",
-            // zindex: 9,
             width: 640,
             height: 480
           }}
