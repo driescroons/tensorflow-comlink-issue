@@ -1,8 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as tf from "@tensorflow/tfjs";
-import * as facemesh from "@tensorflow-models/facemesh";
+import * as Comlink from 'comlink';
 import * as landmarks from "@tensorflow-models/face-landmarks-detection";
 import Webcam from "react-webcam";
+
+// eslint-disable-next-line import/no-webpack-loader-syntax
+import WorkerLoader from 'comlink-loader!./worker';
+
 import { drawMesh } from "./utilities";
 import "./Landmark.css";
 
@@ -14,6 +18,9 @@ function Landmark() {
 
   const [predictions, setPredictions] = useState([]);
   const [webcamLoaded, setWebcamLoaded] = useState(false);
+  const [workerLoaded, setWorkerLoaded] = useState(false);
+
+  const workerRef = useRef(null);
 
   const runFacemesh = async () => {
     modelRef.current = await landmarks.load(
@@ -36,11 +43,13 @@ function Landmark() {
       setPredictions(predictions)
     }
 
+    console.log(await workerRef.current.predict());
+
     requestAnimationFrame(detect);
   };
 
   useEffect(() => {
-    if (webcamLoaded) {
+    if (webcamLoaded && workerLoaded) {
       context.current = canvasRef.current.getContext('2d');
 
       const videoWidth = webcamRef.current.video.videoWidth;
@@ -56,9 +65,16 @@ function Landmark() {
 
       runFacemesh();
     }
-  }, [webcamLoaded]);
+  }, [webcamLoaded, workerLoaded]);
 
   useEffect(() => {
+    (async () => {
+      const { Worker } = new WorkerLoader();
+      workerRef.current = await new Worker();
+      await Worker.load();
+      setWorkerLoaded(true);
+    })();
+
     const interval = setInterval(() => {
       if (
         typeof webcamRef.current !== "undefined" &&
