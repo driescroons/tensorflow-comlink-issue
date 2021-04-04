@@ -30,8 +30,21 @@ function Landmark() {
       webcamRef.current !== null &&
       webcamRef.current.video.readyState === 4
     ) {
-      const video = webcamRef.current.video
-      const predictions = await workerRef.current.predict(Comlink.proxy(video));
+      const width = webcamRef.current.video.width;
+      const height = webcamRef.current.video.height;
+
+      const canvas = new OffscreenCanvas(width, height);
+      const context = canvas.getContext("2d");
+      context.drawImage(webcamRef.current.video, 0, 0);
+
+      const pixels = context.getImageData(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+      );
+
+      const predictions = await workerRef.current.predict(pixels);
       setPredictions(predictions)
     }
 

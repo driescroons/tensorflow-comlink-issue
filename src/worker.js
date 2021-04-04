@@ -9,11 +9,11 @@ export class Worker {
   );
   }
 
-  predict = async (video) => {
+  predict = async (imageData) => {
     if (!Worker.model) await Worker.load();
     
     const predictions = await Worker.model.estimateFaces({
-      input: video
+      input: imageData
     });
 
     return predictions;
